@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <rect width="32" height="32" rx="8" fill="#2563eb"/>
+  <!-- Hexagon background -->
+  <path d="M16 4 26 10v12L16 28 6 22V10z" fill="white" opacity="0.15"/>
+  <!-- S-shaped trade path -->
+  <path d="M12 13c0-1.7 1.3-3 3-3h2c1.7 0 3 1.3 3 3s-1.3 3-3 3h-2c-1.7 0-3 1.3-3 3s1.3 3 3 3h2c1.7 0 3-1.3 3-3"
+    stroke="white" stroke-width="2" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,245 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum AuditAction {
+  LOGIN_SUCCESS
+  LOGIN_FAIL
+  LOGOUT
+  LOGOUT_ALL
+  PASSWORD_RESET
+  PASSWORD_CHANGED
+  PROFILE_UPDATED
+  BIOMETRIC_ENROLLED
+  BIOMETRIC_LOGIN
+  BIOMETRIC_REVOKED
+  ORDER_CREATED
+  PAYMENT_RECEIVED
+  PAYMENT_FAILED
+  PRODUCT_CREATED
+  PRODUCT_UPDATED
+  PRODUCT_DELETED
+  ORDER_STATUS_UPDATED
+  ACCOUNT_LOCKED
+  ACCOUNT_DELETED
+  ADDRESS_CREATED
+  ADDRESS_UPDATED
+  ADDRESS_DELETED
+}
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+model User {
+  user_id            String    @id @default(uuid())
+  email              String    @unique
+  password_hash      String
+  phone              String?   @unique
+  full_name          String
+  role               Role      @default(CUSTOMER)
+  is_verified        Boolean   @default(false)
+  biometric_enrolled Boolean   @default(false)
+  failed_attempts    Int       @default(0)
+  locked_until       DateTime?
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @updatedAt
+
+  devices               Device[]
+  webauthn_credentials  WebAuthnCredential[]
+  cart_items            CartItem[]
+  orders                Order[]
+  audit_logs            AuditLog[]
+  password_reset_tokens PasswordResetToken[]
+  addresses             Address[]
+}
+
+model Device {
+  device_id               String   @id @default(uuid())
+  user_id                 String
+  device_fingerprint_hash String
+  platform                String?
+  user_agent              String?
+  trusted_at              DateTime @default(now())
+  created_at              DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@unique([user_id, device_fingerprint_hash])
+}
+
+model WebAuthnCredential {
+  credential_id String   @id
+  user_id       String
+  public_key    String
+  sign_count    BigInt   @default(0)
+  aaguid        String?
+  device_type   String?
+  backed_up     Boolean  @default(false)
+  transports    String[]
+  created_at    DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@index([user_id])
+}
+
+model Category {
+  category_id String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  slug        String   @unique
+  is_active   Boolean  @default(true)
+  created_at  DateTime @default(now())
+
+  products Product[]
+}
+
+model Product {
+  product_id  String   @id @default(uuid())
+  name        String
+  description String
+  price       Decimal  @db.Decimal(10, 2)
+  stock_qty   Int      @default(0)
+  image_url   String?
+  category_id String
+  is_active   Boolean  @default(true)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  category    Category    @relation(fields: [category_id], references: [category_id])
+  cart_items  CartItem[]
+  order_items OrderItem[]
+
+  @@index([category_id])
+}
+
+model CartItem {
+  cart_item_id String   @id @default(uuid())
+  user_id      String
+  product_id   String
+  quantity     Int
+  added_at     DateTime @default(now())
+
+  user    User    @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  product Product @relation(fields: [product_id], references: [product_id], onDelete: Cascade)
+
+  @@unique([user_id, product_id])
+}
+
+model Order {
+  order_id         String        @id @default(uuid())
+  user_id          String
+  status           OrderStatus   @default(PENDING)
+  payment_status   PaymentStatus @default(UNPAID)
+  total_amount     Decimal       @db.Decimal(10, 2)
+  shipping_address Json
+  created_at       DateTime      @default(now())
+  updated_at       DateTime      @updatedAt
+
+  user        User        @relation(fields: [user_id], references: [user_id])
+  order_items OrderItem[]
+  payment     Payment?
+}
+
+model OrderItem {
+  order_item_id String  @id @default(uuid())
+  order_id      String
+  product_id    String
+  quantity      Int
+  unit_price    Decimal @db.Decimal(10, 2)
+  subtotal      Decimal @db.Decimal(10, 2)
+
+  order   Order   @relation(fields: [order_id], references: [order_id], onDelete: Cascade)
+  product Product @relation(fields: [product_id], references: [product_id])
+
+  @@index([order_id])
+  @@index([product_id])
+}
+
+model Payment {
+  payment_id      String        @id @default(uuid())
+  order_id        String        @unique
+  tx_ref          String        @unique
+  amount          Decimal       @db.Decimal(10, 2)
+  currency        String        @default("USD")
+  provider        String        @default("flutterwave")
+  status          PaymentStatus @default(UNPAID)
+  provider_ref    String?
+  webhook_payload Json?
+  created_at      DateTime      @default(now())
+  updated_at      DateTime      @updatedAt
+
+  order Order @relation(fields: [order_id], references: [order_id])
+}
+
+model AuditLog {
+  log_id     String      @id @default(uuid())
+  user_id    String?
+  action     AuditAction
+  ip_address String?
+  user_agent String?
+  metadata   Json?
+  created_at DateTime    @default(now())
+
+  // SetNull preserves audit history when a user account is deleted
+  user User? @relation(fields: [user_id], references: [user_id], onDelete: SetNull)
+}
+
+model PasswordResetToken {
+  token_id   String    @id @default(uuid())
+  user_id    String
+  token_hash String    @unique
+  expires_at DateTime
+  used_at    DateTime?
+  created_at DateTime  @default(now())
+
+  user User @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@index([user_id])
+}
+
+model Address {
+  address_id   String   @id @default(uuid())
+  user_id      String
+  full_name    String
+  address_line String
+  city         String
+  state        String
+  country      String
+  zip_code     String
+  phone        String?
+  is_default   Boolean  @default(false)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  user User @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@index([user_id])
+}

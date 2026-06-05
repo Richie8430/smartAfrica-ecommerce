@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /account/
+Disallow: /checkout
+Disallow: /cart
+Disallow: /order-confirmation
+Disallow: /payment-failed
+Disallow: /api/
+
+Sitemap: https://smarttrade.africa/sitemap.xml
