@@ -49,11 +49,13 @@ export default function Login() {
       setAuth(user, accessToken);
       toast.success(`Welcome back, ${user.full_name.split(' ')[0]}!`);
 
+      const destination = user.role === 'ADMIN' ? '/admin' : returnUrl;
+
       // Prompt biometric enroll if not enrolled and not dismissed
       if (!user.biometric_enrolled && !localStorage.getItem(BIOMETRIC_DISMISS_KEY)) {
         setShowEnrollModal(true);
       } else {
-        navigate(returnUrl, { replace: true });
+        navigate(destination, { replace: true });
       }
     } catch (err) {
       const apiError = err as AxiosError<ApiResponse>;
@@ -139,7 +141,10 @@ export default function Login() {
 
           <BiometricLoginButton
             email={emailValue}
-            onSuccess={() => navigate(returnUrl, { replace: true })}
+            onSuccess={() => {
+              const role = useAuthStore.getState().user?.role;
+              navigate(role === 'ADMIN' ? '/admin' : returnUrl, { replace: true });
+            }}
           />
         </form>
 
@@ -155,7 +160,8 @@ export default function Login() {
         open={showEnrollModal}
         onClose={() => {
           setShowEnrollModal(false);
-          navigate(returnUrl, { replace: true });
+          const role = useAuthStore.getState().user?.role;
+          navigate(role === 'ADMIN' ? '/admin' : returnUrl, { replace: true });
         }}
       />
     </>

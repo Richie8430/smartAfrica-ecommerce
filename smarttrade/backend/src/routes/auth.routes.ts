@@ -24,6 +24,11 @@ import { success }       from '../utils/response.js';
 
 const router = Router();
 
+// Triggers the CSRF middleware to set the csrf_token cookie for the client.
+router.get('/csrf', (_req: Request, res: Response) => {
+  res.json({ ok: true });
+});
+
 router.post('/register',        authSlowDown, authLimiter, validateBody(registerSchema), register);
 router.post('/verify-email',    verifyEmail);
 router.post('/resend-otp',      otpLimiter, resendOTP);

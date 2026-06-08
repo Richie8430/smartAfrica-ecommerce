@@ -1,5 +1,4 @@
-import { PrismaClient, Role } from '@prisma/client';
-import bcrypt from 'bcryptjs';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -11,11 +10,6 @@ const CATEGORY_IDS = {
   homeGarden:   'c3000000-0000-4000-a000-000000000003',
   sports:       'c4000000-0000-4000-a000-000000000004',
   healthBeauty: 'c5000000-0000-4000-a000-000000000005',
-};
-
-const USER_IDS = {
-  admin:    'a0000000-0000-4000-a000-000000000001',
-  customer: 'a0000000-0000-4000-a000-000000000002',
 };
 
 // ─── Categories ───────────────────────────────────────────────────────────────
@@ -102,43 +96,10 @@ async function main() {
   // Scoped delete targets only known seed IDs so real data is never touched.
   console.log('  → Refreshing products...');
   const seedProductIds = products.map((p) => p.product_id);
+  await prisma.orderItem.deleteMany({ where: { product_id: { in: seedProductIds } } });
   await prisma.product.deleteMany({ where: { product_id: { in: seedProductIds } } });
   await prisma.product.createMany({ data: products });
   console.log(`  ✓ ${products.length} products seeded`);
-
-  // Admin user
-  console.log('  → Upserting admin user...');
-  const adminHash = await bcrypt.hash('Admin@1234', 12);
-  await prisma.user.upsert({
-    where:  { email: 'admin@smarttrade.test' },
-    update: { password_hash: adminHash, role: Role.ADMIN, is_verified: true },
-    create: {
-      user_id:       USER_IDS.admin,
-      email:         'admin@smarttrade.test',
-      password_hash: adminHash,
-      full_name:     'SmartTrade Admin',
-      role:          Role.ADMIN,
-      is_verified:   true,
-    },
-  });
-  console.log('  ✓ Admin user  → admin@smarttrade.test / Admin@1234');
-
-  // Test customer
-  console.log('  → Upserting test customer...');
-  const customerHash = await bcrypt.hash('Customer@1234', 12);
-  await prisma.user.upsert({
-    where:  { email: 'customer@smarttrade.test' },
-    update: { password_hash: customerHash, is_verified: true },
-    create: {
-      user_id:       USER_IDS.customer,
-      email:         'customer@smarttrade.test',
-      password_hash: customerHash,
-      full_name:     'Test Customer',
-      role:          Role.CUSTOMER,
-      is_verified:   true,
-    },
-  });
-  console.log('  ✓ Customer    → customer@smarttrade.test / Customer@1234');
 
   console.log('\n✅ Seed complete.\n');
 }

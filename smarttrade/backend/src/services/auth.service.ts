@@ -39,12 +39,16 @@ export async function registerUser(data: {
 
   const password_hash = await bcrypt.hash(data.password, 12);
 
+  const userCount = await db.user.count();
+  const isFirstUser = userCount === 0;
+
   const user = await db.user.create({
     data: {
       email,
       password_hash,
       full_name: data.full_name,
       phone: data.phone ?? null,
+      ...(isFirstUser && { role: 'ADMIN', is_verified: true }),
     },
   });
 
