@@ -7,7 +7,6 @@ export interface CreateProductPayload {
   price:       number;
   stock_qty:   number;
   category_id: string;
-  image_url?:  string;
 }
 
 export type UpdateProductPayload = Partial<CreateProductPayload> & { is_active?: boolean };
@@ -15,13 +14,21 @@ export type UpdateProductPayload = Partial<CreateProductPayload> & { is_active?:
 export const adminApi = {
   // Products
   createProduct: (payload: CreateProductPayload) =>
-    apiClient.post<ApiResponse<Product>>('/admin/products', payload),
+    apiClient.post<ApiResponse<Product>>('/products', payload),
 
   updateProduct: (id: string, payload: UpdateProductPayload) =>
-    apiClient.put<ApiResponse<Product>>(`/admin/products/${id}`, payload),
+    apiClient.put<ApiResponse<Product>>(`/products/${id}`, payload),
 
   deleteProduct: (id: string) =>
-    apiClient.delete<ApiResponse<null>>(`/admin/products/${id}`),
+    apiClient.delete<ApiResponse<null>>(`/products/${id}`),
+
+  uploadProductImage: (id: string, file: File) => {
+    const form = new FormData();
+    form.append('image', file);
+    return apiClient.post<ApiResponse<Product>>(`/products/${id}/images`, form, {
+      headers: { 'Content-Type': undefined },
+    });
+  },
 
   // Orders
   listOrders: (params?: { page?: number; limit?: number; status?: string }) =>

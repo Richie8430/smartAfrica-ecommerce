@@ -1,15 +1,9 @@
 import multer from 'multer';
-import { v2 as cloudinary } from 'cloudinary';
-import type { UploadApiResponse } from 'cloudinary';
-import { Readable } from 'node:stream';
+import { createHash } from 'node:crypto';
 
-// ─── Cloudinary config (reads from env at module load) ────────────────────────
-cloudinary.config({
-  cloud_name: process.env['CLOUDINARY_CLOUD_NAME'],
-  api_key:    process.env['CLOUDINARY_API_KEY'],
-  api_secret: process.env['CLOUDINARY_API_SECRET'],
-  secure:     true,
-});
+const CLOUD_NAME  = process.env['CLOUDINARY_CLOUD_NAME']  ?? '';
+const API_KEY     = process.env['CLOUDINARY_API_KEY']     ?? '';
+const API_SECRET  = process.env['CLOUDINARY_API_SECRET']  ?? '';
 
 // ─── Multer — memory storage (no disk writes) ─────────────────────────────────
 export const uploadMiddleware = multer({
@@ -24,36 +18,36 @@ export const uploadMiddleware = multer({
   },
 }).single('image');
 
-// ─── Cloudinary stream upload ─────────────────────────────────────────────────
+// ─── Cloudinary upload via native fetch (SDK v2 broken on Node 22) ────────────
 
-/**
- * Uploads a Buffer to Cloudinary via a writable stream.
- * Returns the secure CDN URL of the uploaded image.
- */
-export function uploadToCloudinary(
+export async function uploadToCloudinary(
   buffer: Buffer,
   publicId: string,
 ): Promise<string> {
-  return new Promise<string>((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      {
-        public_id:     `smarttrade/products/${publicId}`,
-        resource_type: 'image',
-        overwrite:     true,
-        format:        'webp',   // auto-convert to WebP for size savings
-        quality:       'auto',
-      },
-      (error: Error | undefined, result: UploadApiResponse | undefined) => {
-        if (error) return reject(error);
-        if (!result) return reject(new Error('Cloudinary returned no result'));
-        resolve(result.secure_url);
-      },
-    );
+  const timestamp = Math.round(Date.now() / 1000);
 
-    // Pipe buffer into the upload stream
-    const readable = new Readable();
-    readable.push(buffer);
-    readable.push(null);
-    readable.pipe(uploadStream);
-  });
+  // Signature: sha256 of sorted param string + secret
+  const toSign    = `public_id=${publicId}&timestamp=${timestamp}${API_SECRET}`;
+  const signature = createHash('sha256').update(toSign).digest('hex');
+
+  const form = new FormData();
+  const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer;
+  form.append('file', new Blob([arrayBuffer]), 'upload');
+  form.append('api_key',   API_KEY);
+  form.append('timestamp', String(timestamp));
+  form.append('public_id', publicId);
+  form.append('signature', signature);
+
+  const res = await fetch(
+    `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+    { method: 'POST', body: form },
+  );
+
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Cloudinary upload failed (${res.status}): ${body}`);
+  }
+
+  const json = await res.json() as { secure_url: string };
+  return json.secure_url;
 }

@@ -6,6 +6,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { productsApi } from '@/api/products.api';
 import { adminApi, type CreateProductPayload } from '@/api/admin.api';
+import { toast } from '@/components/ui/Toast';
+import type { AxiosError } from 'axios';
+import type { ApiResponse } from '@/types';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { FadeIn } from '@/components/ui/Motion';
@@ -20,17 +23,19 @@ const schema = z.object({
   price:       z.coerce.number().positive(),
   stock_qty:   z.coerce.number().int().min(0),
   category_id: z.string().min(1, 'Select a category'),
-  image_url:   z.string().url().optional().or(z.literal('')),
 });
 
 type FormData = z.infer<typeof schema>;
 
 export default function AdminProducts() {
   const qc = useQueryClient();
-  const [search, setSearch]         = useState('');
+  const [search, setSearch]           = useState('');
   const [editProduct, setEditProduct] = useState<Product | null>(null);
-  const [modalOpen, setModalOpen]   = useState(false);
-  const [page, setPage]             = useState(1);
+  const [modalOpen, setModalOpen]     = useState(false);
+  const [page, setPage]               = useState(1);
+  const [imageFile, setImageFile]     = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageError, setImageError]   = useState<string | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-products', page],
@@ -53,11 +58,23 @@ export default function AdminProducts() {
     register,
     handleSubmit,
     reset,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<FormData>({ resolver: zodResolver(schema) });
 
-  const openCreate = () => { setEditProduct(null); reset({}); setModalOpen(true); };
-  const openEdit   = (p: Product) => {
+  const resetImage = () => { setImageFile(null); setImagePreview(null); setImageError(null); };
+
+  const openCreate = () => {
+    createMutation.reset();
+    updateMutation.reset();
+    setEditProduct(null);
+    reset({});
+    resetImage();
+    setModalOpen(true);
+  };
+
+  const openEdit = (p: Product) => {
+    createMutation.reset();
+    updateMutation.reset();
     setEditProduct(p);
     reset({
       name:        p.name,
@@ -65,19 +82,47 @@ export default function AdminProducts() {
       price:       Number(p.price),
       stock_qty:   p.stock_qty,
       category_id: p.category_id,
-      image_url:   p.image_url ?? '',
     });
+    resetImage();
+    setImagePreview(p.image_url ?? null);
     setModalOpen(true);
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    setImageFile(file);
+    setImageError(null);
+    if (file) {
+      setImagePreview(URL.createObjectURL(file));
+    } else {
+      setImagePreview(editProduct?.image_url ?? null);
+    }
+  };
+
+  const handleMutationError = (err: unknown) => {
+    const msg = (err as AxiosError<ApiResponse>)?.response?.data?.error ?? (err as Error)?.message ?? 'Unknown error';
+    toast.error('Failed', msg);
+    console.error('[product mutation error]', err);
+  };
+
   const createMutation = useMutation({
-    mutationFn: (data: FormData) => adminApi.createProduct(data as CreateProductPayload),
-    onSuccess:  () => { qc.invalidateQueries({ queryKey: ['admin-products'] }); setModalOpen(false); },
+    mutationFn: async (data: FormData) => {
+      const res = await adminApi.createProduct(data as CreateProductPayload);
+      const product = res.data.data!;
+      if (imageFile) await adminApi.uploadProductImage(product.product_id, imageFile);
+      return product;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-products'] }); setModalOpen(false); },
+    onError: handleMutationError,
   });
 
   const updateMutation = useMutation({
-    mutationFn: (data: FormData) => adminApi.updateProduct(editProduct!.product_id, data),
-    onSuccess:  () => { qc.invalidateQueries({ queryKey: ['admin-products'] }); setModalOpen(false); },
+    mutationFn: async (data: FormData) => {
+      await adminApi.updateProduct(editProduct!.product_id, data);
+      if (imageFile) await adminApi.uploadProductImage(editProduct!.product_id, imageFile);
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-products'] }); setModalOpen(false); },
+    onError: handleMutationError,
   });
 
   const deleteMutation = useMutation({
@@ -85,8 +130,13 @@ export default function AdminProducts() {
     onSuccess:  () => qc.invalidateQueries({ queryKey: ['admin-products'] }),
   });
 
-  const onSubmit = (data: FormData) =>
+  const isWorking = createMutation.isPending || updateMutation.isPending;
+
+  const onSubmit = (data: FormData) => {
+    if (isWorking) return;
+    if (!editProduct && !imageFile) { setImageError('Product image is required'); return; }
     editProduct ? updateMutation.mutate(data) : createMutation.mutate(data);
+  };
 
   return (
     <div className="px-6 py-8">
@@ -245,13 +295,37 @@ export default function AdminProducts() {
                 </select>
                 {errors.category_id && <p className="mt-1 text-xs text-red-600">{errors.category_id.message}</p>}
               </div>
-              <Input label="Image URL (optional)" placeholder="https://…" error={errors.image_url?.message} {...register('image_url')} />
+              {/* Image upload */}
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                  Product image {!editProduct && <span className="text-red-500">*</span>}
+                </label>
+                <div className="flex items-start gap-3">
+                  <div className="h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 flex items-center justify-center">
+                    {imagePreview
+                      ? <img src={imagePreview} alt="preview" className="h-full w-full object-cover" />
+                      : <ImageIcon size={24} className="text-neutral-300" />
+                    }
+                  </div>
+                  <div className="flex-1">
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={handleImageChange}
+                      className="block w-full text-sm text-neutral-500 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-primary/10 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-primary hover:file:bg-primary/20"
+                    />
+                    <p className="mt-1 text-xs text-neutral-400">JPEG, PNG or WebP — max 5 MB</p>
+                    {editProduct && !imageFile && <p className="mt-1 text-xs text-neutral-400">Leave empty to keep current image</p>}
+                    {imageError && <p className="mt-1 text-xs text-red-600">{imageError}</p>}
+                  </div>
+                </div>
+              </div>
 
               <div className="flex justify-end gap-2 pt-2">
                 <Dialog.Close asChild>
                   <Button variant="outline">Cancel</Button>
                 </Dialog.Close>
-                <Button type="submit" loading={isSubmitting}>
+                <Button type="submit" loading={isWorking}>
                   {editProduct ? 'Save changes' : 'Create product'}
                 </Button>
               </div>
