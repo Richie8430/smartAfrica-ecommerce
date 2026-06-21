@@ -55,6 +55,25 @@ function buildCSV(rows: Array<{
 
 // ─── GET /audit-log  (customer — own last 30 days) ────────────────────────────
 
+/**
+ * @openapi
+ * /account/audit-log:
+ *   get:
+ *     summary: Get the authenticated user's own audit log (last 30 days)
+ *     description: Mounted under /account — returns at most the 50 most recent entries for the current user.
+ *     tags: [Audit]
+ *     responses:
+ *       200:
+ *         description: Audit log entries
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean, example: true }
+ *                 data: { type: array, items: { type: object } }
+ *                 total: { type: integer }
+ */
 router.get(
   '/audit-log',
   authenticate,
@@ -88,6 +107,38 @@ router.get(
 
 // ─── GET /audit-logs/export  (admin — must come before /:anything) ────────────
 
+/**
+ * @openapi
+ * /admin/audit-logs/export:
+ *   get:
+ *     summary: Export all audit logs as CSV (admin only)
+ *     description: Mounted under /admin. Requires ADMIN role. Returns up to 10,000 rows as a CSV file attachment.
+ *     tags: [Audit]
+ *     parameters:
+ *       - in: query
+ *         name: user_id
+ *         schema: { type: string }
+ *       - in: query
+ *         name: action
+ *         schema: { type: string }
+ *       - in: query
+ *         name: from
+ *         schema: { type: string, format: date-time }
+ *       - in: query
+ *         name: to
+ *         schema: { type: string, format: date-time }
+ *     responses:
+ *       200:
+ *         description: CSV file of audit log entries
+ *         content:
+ *           text/csv:
+ *             schema: { type: string }
+ *       403:
+ *         description: Forbidden — admin role required
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/ApiError' }
+ */
 router.get(
   '/audit-logs/export',
   authenticate,
@@ -116,6 +167,52 @@ router.get(
 
 // ─── GET /audit-logs  (admin — paginated with filters) ───────────────────────
 
+/**
+ * @openapi
+ * /admin/audit-logs:
+ *   get:
+ *     summary: List all audit logs, paginated with filters (admin only)
+ *     description: Mounted under /admin. Requires ADMIN role.
+ *     tags: [Audit]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema: { type: integer, default: 1 }
+ *       - in: query
+ *         name: limit
+ *         schema: { type: integer, default: 20, maximum: 100 }
+ *       - in: query
+ *         name: user_id
+ *         schema: { type: string }
+ *       - in: query
+ *         name: action
+ *         schema: { type: string }
+ *       - in: query
+ *         name: from
+ *         schema: { type: string, format: date-time }
+ *       - in: query
+ *         name: to
+ *         schema: { type: string, format: date-time }
+ *     responses:
+ *       200:
+ *         description: Paginated audit log entries
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean, example: true }
+ *                 data: { type: array, items: { type: object } }
+ *                 total: { type: integer }
+ *                 page: { type: integer }
+ *                 totalPages: { type: integer }
+ *                 limit: { type: integer }
+ *       403:
+ *         description: Forbidden — admin role required
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/ApiError' }
+ */
 router.get(
   '/audit-logs',
   authenticate,

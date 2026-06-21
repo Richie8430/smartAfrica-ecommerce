@@ -10,6 +10,7 @@ import hpp from 'hpp';
 import { v4 as uuidv4 } from 'uuid';
 import { logger } from './utils/logger.js';
 import { csrfMiddleware } from './middlewares/csrf.middleware.js';
+import { mountSwagger } from './swagger.js';
 import authRoutes     from './routes/auth.routes.js';
 import webauthnRoutes from './routes/webauthn.routes.js';
 import productRoutes  from './routes/product.routes.js';
@@ -125,6 +126,9 @@ app.use(
 
 // ─── (j) CSRF double-submit cookie ───────────────────────────────────────────
 app.use(csrfMiddleware);
+
+// ─── (k0) API docs — non-production only ─────────────────────────────────────
+mountSwagger(app);
 
 // ─── (k) Health check ────────────────────────────────────────────────────────
 app.get('/api/v1/health', (_req: Request, res: Response) => {

@@ -26,6 +26,45 @@ const updateProfileSchema = z.object({
   phone:     z.string().regex(/^\+?[0-9\s\-().]{7,20}$/).optional().nullable(),
 });
 
+/**
+ * @openapi
+ * /account/profile:
+ *   put:
+ *     summary: Update the authenticated user's profile
+ *     tags: [Account]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               full_name: { type: string, minLength: 2, maxLength: 100 }
+ *               phone: { type: string, nullable: true }
+ *     responses:
+ *       200:
+ *         description: Updated profile
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean, example: true }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     user_id: { type: string }
+ *                     email: { type: string }
+ *                     full_name: { type: string }
+ *                     phone: { type: string, nullable: true }
+ *                     role: { type: string }
+ *                     biometric_enrolled: { type: boolean }
+ *       422:
+ *         description: Invalid profile data
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/ApiError' }
+ */
 router.put(
   '/profile',
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -58,6 +97,41 @@ router.put(
 
 // ─── DELETE /account ──────────────────────────────────────────────────────────
 
+/**
+ * @openapi
+ * /account:
+ *   delete:
+ *     summary: Delete (soft-delete/anonymise) the authenticated user's account
+ *     description: Requires the user's current password. Revokes all sessions and anonymises PII rather than hard-deleting, so audit logs are preserved.
+ *     tags: [Account]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [password]
+ *             properties:
+ *               password: { type: string }
+ *     responses:
+ *       200:
+ *         description: Account deleted
+ *       400:
+ *         description: Password required to delete account
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/ApiError' }
+ *       401:
+ *         description: Incorrect password
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/ApiError' }
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/ApiError' }
+ */
 router.delete(
   '/',
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -98,6 +172,16 @@ router.delete(
 
 // ─── GET /addresses ───────────────────────────────────────────────────────────
 
+/**
+ * @openapi
+ * /account/addresses:
+ *   get:
+ *     summary: List the authenticated user's saved addresses
+ *     tags: [Account]
+ *     responses:
+ *       200:
+ *         description: List of addresses, default address first
+ */
 router.get(
   '/addresses',
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -126,6 +210,38 @@ const addressSchema = z.object({
   is_default:   z.boolean().optional(),
 });
 
+/**
+ * @openapi
+ * /account/addresses:
+ *   post:
+ *     summary: Add a new address for the authenticated user
+ *     description: If is_default is true, clears the default flag on the user's other addresses first.
+ *     tags: [Account]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [full_name, address_line, city, state, country, zip_code]
+ *             properties:
+ *               full_name: { type: string, minLength: 2, maxLength: 100 }
+ *               address_line: { type: string, minLength: 5, maxLength: 200 }
+ *               city: { type: string, minLength: 2, maxLength: 100 }
+ *               state: { type: string, minLength: 2, maxLength: 100 }
+ *               country: { type: string, minLength: 2, maxLength: 100 }
+ *               zip_code: { type: string, minLength: 3, maxLength: 20 }
+ *               phone: { type: string, nullable: true }
+ *               is_default: { type: boolean }
+ *     responses:
+ *       201:
+ *         description: Address added
+ *       422:
+ *         description: Invalid address data
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/ApiError' }
+ */
 router.post(
   '/addresses',
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -155,6 +271,47 @@ router.post(
 
 // ─── PUT /addresses/:id ───────────────────────────────────────────────────────
 
+/**
+ * @openapi
+ * /account/addresses/{id}:
+ *   put:
+ *     summary: Update one of the authenticated user's addresses
+ *     description: All fields optional (partial update). If is_default is set to true, clears the default flag on the user's other addresses first.
+ *     tags: [Account]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               full_name: { type: string, minLength: 2, maxLength: 100 }
+ *               address_line: { type: string, minLength: 5, maxLength: 200 }
+ *               city: { type: string, minLength: 2, maxLength: 100 }
+ *               state: { type: string, minLength: 2, maxLength: 100 }
+ *               country: { type: string, minLength: 2, maxLength: 100 }
+ *               zip_code: { type: string, minLength: 3, maxLength: 20 }
+ *               phone: { type: string, nullable: true }
+ *               is_default: { type: boolean }
+ *     responses:
+ *       200:
+ *         description: Updated address
+ *       404:
+ *         description: Address not found
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/ApiError' }
+ *       422:
+ *         description: Invalid address data
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/ApiError' }
+ */
 router.put(
   '/addresses/:id',
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -190,6 +347,26 @@ router.put(
 
 // ─── DELETE /addresses/:id ────────────────────────────────────────────────────
 
+/**
+ * @openapi
+ * /account/addresses/{id}:
+ *   delete:
+ *     summary: Delete one of the authenticated user's addresses
+ *     tags: [Account]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Address deleted
+ *       404:
+ *         description: Address not found
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/ApiError' }
+ */
 router.delete(
   '/addresses/:id',
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {

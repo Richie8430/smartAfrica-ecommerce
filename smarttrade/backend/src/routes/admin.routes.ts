@@ -15,6 +15,41 @@ router.use(authenticate, requireRole('ADMIN'));
 
 // ─── GET /stats ───────────────────────────────────────────────────────────────
 
+/**
+ * @openapi
+ * /admin/stats:
+ *   get:
+ *     summary: Get dashboard statistics (admin only)
+ *     description: Requires ADMIN role. Returns order/user/product counts, revenue totals (today/week/month), order status breakdown, low-stock products, and recent orders.
+ *     tags: [Admin]
+ *     responses:
+ *       200:
+ *         description: Dashboard statistics
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean, example: true }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     totalOrders: { type: integer }
+ *                     totalUsers: { type: integer }
+ *                     totalProducts: { type: integer }
+ *                     todayRevenue: { type: number }
+ *                     weekRevenue: { type: number }
+ *                     monthRevenue: { type: number }
+ *                     totalRevenue: { type: number }
+ *                     ordersByStatus: { type: object }
+ *                     lowStockProducts: { type: array, items: { type: object } }
+ *                     recentOrders: { type: array, items: { type: object } }
+ *       403:
+ *         description: Forbidden — admin role required
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/ApiError' }
+ */
 router.get(
   '/stats',
   async (_req: Request, res: Response, next: NextFunction): Promise<void> => {

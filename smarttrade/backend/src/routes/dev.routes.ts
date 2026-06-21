@@ -25,6 +25,37 @@ router.use(guard);
 // ─── POST /dev/seed ────────────────────────────────────────────────────────────
 // Creates deterministic test fixtures for E2E tests.
 
+/**
+ * @openapi
+ * /dev/seed:
+ *   post:
+ *     summary: Seed deterministic test fixtures for E2E tests
+ *     description: Only available outside production (404s in production). Upserts a test admin, test customer, test category, and in-stock/out-of-stock test products.
+ *     tags: [Dev]
+ *     security: []
+ *     responses:
+ *       200:
+ *         description: IDs of the created/updated fixtures
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean, example: true }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     adminId: { type: string }
+ *                     customerId: { type: string }
+ *                     categoryId: { type: string }
+ *                     productId: { type: string }
+ *                     oosProductId: { type: string }
+ *       404:
+ *         description: Not found — route disabled in production
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/ApiError' }
+ */
 router.post(
   '/seed',
   async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -124,6 +155,23 @@ router.post(
 // ─── DELETE /dev/cleanup ───────────────────────────────────────────────────────
 // Removes test fixtures created by /seed (for teardown).
 
+/**
+ * @openapi
+ * /dev/cleanup:
+ *   delete:
+ *     summary: Remove test fixtures created by /dev/seed
+ *     description: Only available outside production (404s in production). Deletes test cart items, products, category, and users created for E2E tests.
+ *     tags: [Dev]
+ *     security: []
+ *     responses:
+ *       200:
+ *         description: Test fixtures cleaned up
+ *       404:
+ *         description: Not found — route disabled in production
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/ApiError' }
+ */
 router.delete(
   '/cleanup',
   async (_req: Request, res: Response, next: NextFunction): Promise<void> => {

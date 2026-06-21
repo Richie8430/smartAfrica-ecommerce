@@ -3,6 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { authApi } from '@/api/auth.api';
 import { useAuthStore } from '@/stores/auth.store';
 import { useCartStore } from '@/stores/cart.store';
+import { Avatar } from '@/components/ui/Avatar';
 import {
   HomeIcon, UserIcon, PackageIcon, ShieldCheckIcon, MapPinIcon, LogOutIcon,
 } from '@/components/ui/Icons';
@@ -69,12 +70,7 @@ export default function AccountLayout() {
           <div className="sticky top-24 rounded-2xl border border-neutral-100 bg-white p-4 shadow-sm">
             {/* Avatar */}
             <div className="mb-4 flex flex-col items-center gap-2 border-b border-neutral-100 pb-4">
-              <div
-                className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-xl font-bold text-primary"
-                aria-hidden="true"
-              >
-                {user?.full_name?.[0]?.toUpperCase() ?? '?'}
-              </div>
+              <Avatar seed={user?.userId} name={user?.full_name} size="lg" />
               <p className="text-sm font-semibold text-neutral-900 text-center">{user?.full_name}</p>
               <p className="max-w-full truncate text-xs text-neutral-400">{user?.email}</p>
             </div>

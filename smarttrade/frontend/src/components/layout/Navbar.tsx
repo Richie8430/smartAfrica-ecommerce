@@ -104,7 +104,7 @@ function UserMenu() {
         className="flex items-center gap-1.5 rounded-full p-1 transition-all duration-200 hover:bg-neutral-100"
         aria-expanded={open}
       >
-        <Avatar name={user?.full_name} size="sm" />
+        <Avatar seed={user?.userId} name={user?.full_name} size="sm" />
         <ChevronDownIcon
           size={14}
           className={clsx('text-neutral-400 transition-transform duration-200', open && 'rotate-180')}
