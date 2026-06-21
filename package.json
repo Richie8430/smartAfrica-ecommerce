@@ -1,0 +1,17 @@
+{
+  "name": "smarttrade-africa",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SmartTrade Africa — secure e-commerce platform monorepo",
+  "scripts": {
+    "install:all": "npm i && npm i --prefix smarttrade/backend && npm i --prefix smarttrade/frontend && npm i --prefix smarttrade/shared",
+    "dev": "concurrently \"npm run dev --prefix smarttrade/backend\" \"npm run dev --prefix smarttrade/frontend\"",
+    "build": "npm run build --prefix smarttrade/shared && npm run build --prefix smarttrade/backend && npm run build --prefix smarttrade/frontend",
+    "test": "npm test --prefix smarttrade/backend",
+    "test:e2e": "npm run test:e2e --prefix smarttrade/frontend",
+    "lint": "npm run lint --prefix smarttrade/backend && npm run lint --prefix smarttrade/frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

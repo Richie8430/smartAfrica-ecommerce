@@ -1,0 +1,152 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  BACKEND_DIR: smarttrade/backend
+  FRONTEND_DIR: smarttrade/frontend
+
+jobs:
+  backend-checks:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: smarttrade_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/smarttrade_test
+      REDIS_URL: redis://localhost:6379
+      JWT_PRIVATE_KEY_PATH: ./keys/private.pem
+      JWT_PUBLIC_KEY_PATH: ./keys/public.pem
+      ALLOWED_ORIGINS: http://localhost:5173
+      APP_URL: http://localhost:5173
+      API_URL: http://localhost:4000
+      FLW_PUBLIC_KEY: ${{ secrets.FLW_PUBLIC_KEY_TEST }}
+      FLW_SECRET_KEY: ${{ secrets.FLW_SECRET_KEY_TEST }}
+      FLW_ENCRYPTION_KEY: ${{ secrets.FLW_ENCRYPTION_KEY_TEST }}
+      FLW_WEBHOOK_HASH: ${{ secrets.FLW_WEBHOOK_HASH_TEST }}
+      SMTP_HOST: smtp.mailtrap.io
+      SMTP_PORT: 587
+      SMTP_USER: ${{ secrets.SMTP_USER_TEST }}
+      SMTP_PASS: ${{ secrets.SMTP_PASS_TEST }}
+      EMAIL_FROM: noreply@smarttrade.test
+      CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+      CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+      CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+      DISABLE_CSRF: 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'npm', cache-dependency-path: '${{ env.BACKEND_DIR }}/package-lock.json' }
+
+      - name: Install dependencies
+        run: npm ci --prefix ${{ env.BACKEND_DIR }}
+
+      - name: Generate JWT signing keys
+        run: npm run generate:keys --prefix ${{ env.BACKEND_DIR }}
+
+      - name: Lint
+        run: |
+          cd ${{ env.BACKEND_DIR }}
+          npx eslint src --ext .ts
+          npx tsc --noEmit
+
+      - name: Apply database migrations
+        run: npx prisma migrate deploy --schema ${{ env.BACKEND_DIR }}/prisma/schema.prisma
+
+      - name: Unit tests
+        run: cd ${{ env.BACKEND_DIR }} && npm run test:unit -- --coverage
+
+      - name: Integration tests
+        run: cd ${{ env.BACKEND_DIR }} && npm run test:integration
+
+      - name: Security audit
+        run: cd ${{ env.BACKEND_DIR }} && npm audit --audit-level=high
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ${{ env.BACKEND_DIR }}/coverage
+          flags: backend
+
+  frontend-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'npm', cache-dependency-path: '${{ env.FRONTEND_DIR }}/package-lock.json' }
+
+      - name: Install dependencies
+        run: npm ci --prefix ${{ env.FRONTEND_DIR }}
+
+      - name: Lint
+        run: |
+          cd ${{ env.FRONTEND_DIR }}
+          npx eslint src --ext .ts,.tsx
+          npx tsc --noEmit
+
+      - name: Unit tests
+        run: cd ${{ env.FRONTEND_DIR }} && npx vitest run --coverage
+
+      - name: Security audit
+        run: cd ${{ env.FRONTEND_DIR }} && npm audit --audit-level=high
+
+      - name: Build
+        run: npm run build --prefix ${{ env.FRONTEND_DIR }}
+
+  sast:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: returntocorp/semgrep-action@v1
+        with: { config: p/default }
+
+  deploy-staging:
+    needs: [backend-checks, frontend-checks, sast]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: staging
+    steps:
+      - name: Deploy backend to Render
+        run: curl --fail -X POST "${{ secrets.RENDER_DEPLOY_HOOK_BACKEND }}"
+      - name: Deploy frontend to Vercel
+        run: curl --fail -X POST "${{ secrets.VERCEL_DEPLOY_HOOK }}"
+      - name: Smoke test
+        run: |
+          sleep 30
+          curl --fail https://api.staging.smarttrade.africa/api/v1/health
+
+  deploy-production:
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    environment: production # requires manual approval — configure under Settings → Environments
+    steps:
+      - name: Deploy backend (production)
+        run: curl --fail -X POST "${{ secrets.RENDER_DEPLOY_HOOK_BACKEND_PROD }}"
+      - name: Deploy frontend (production)
+        run: curl --fail -X POST "${{ secrets.VERCEL_DEPLOY_HOOK_PROD }}"

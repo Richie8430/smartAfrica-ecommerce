@@ -1,0 +1,12 @@
+# Default owner for everything not matched below.
+# Replace with the actual team-lead / security-lead GitHub handles before relying on this file.
+* @Richie8430
+
+# Security-sensitive services require a security review.
+smarttrade/backend/src/services/payment.service.ts  @Richie8430
+smarttrade/backend/src/services/webauthn.service.ts @Richie8430
+smarttrade/backend/src/middlewares/csrf.middleware.ts @Richie8430
+smarttrade/backend/src/utils/env.ts                 @Richie8430
+
+# CI/CD and repository configuration.
+/.github/ @Richie8430
