@@ -87,7 +87,7 @@ jobs:
         run: cd ${{ env.BACKEND_DIR }} && npm audit --audit-level=high
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: ${{ env.BACKEND_DIR }}/coverage
