@@ -12,7 +12,7 @@ export function TrustBadgeStrip({ className }: { className?: string }) {
     <div
       role="list"
       aria-label="Security trust badges"
-      className={`flex flex-wrap items-center justify-center gap-6 rounded-2xl border border-neutral-100 bg-white p-5 ${className ?? ''}`}
+      className={`flex flex-wrap items-center justify-center gap-6 rounded-2xl border border-neutral-100 bg-white dark:bg-neutral-100 p-5 ${className ?? ''}`}
     >
       {BADGES.map(({ icon, label, sub, color }) => (
         <div key={label} role="listitem" className="flex items-center gap-2.5">

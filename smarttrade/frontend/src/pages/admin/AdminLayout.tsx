@@ -4,6 +4,7 @@ import { authApi } from '@/api/auth.api';
 import { useAuthStore } from '@/stores/auth.store';
 import { useCartStore } from '@/stores/cart.store';
 import { LogoMark } from '@/components/ui/Icons';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import {
   BarChart2Icon, PackageIcon, CartIcon, LogOutIcon, HomeIcon, ShieldCheckIcon,
 } from '@/components/ui/Icons';
@@ -15,6 +16,9 @@ const NAV = [
   { to: '/admin/audit-logs',  icon: <ShieldCheckIcon size={18} />,  label: 'Audit Logs' },
 ];
 
+// The sidebar is always dark navy (bg-primary) regardless of site theme — like
+// the Footer — so these white-tint hover/active overlays must NOT flip with
+// dark mode; they stay literal `white` always.
 const linkClass = ({ isActive }: { isActive: boolean }) =>
   `flex items-center gap-3 rounded-brand px-3 py-2.5 text-sm font-medium transition-colors ${
     isActive
@@ -64,9 +68,12 @@ export default function AdminLayout() {
 
         {/* User */}
         <div className="p-3 border-t border-white/10">
-          <div className="mb-2 px-3 py-2">
-            <p className="text-sm font-semibold text-white truncate">{user?.full_name}</p>
-            <p className="text-xs text-white/50 truncate">{user?.email}</p>
+          <div className="mb-2 flex items-center justify-between gap-2 px-3 py-2">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-white truncate">{user?.full_name}</p>
+              <p className="text-xs text-white/50 truncate">{user?.email}</p>
+            </div>
+            <ThemeToggle tone="inverted" className="h-8 w-8 shrink-0" />
           </div>
           <button
             onClick={() => logoutMutation.mutate()}

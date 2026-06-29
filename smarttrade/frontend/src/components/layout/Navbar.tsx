@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/auth.store';
 import { useCartStore } from '@/stores/cart.store';
 import { authApi } from '@/api/auth.api';
 import { Avatar } from '@/components/ui/Avatar';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { toast } from '@/components/ui/Toast';
 import {
   SearchIcon, CartIcon, MenuIcon, CloseIcon,
@@ -115,7 +116,7 @@ function UserMenu() {
       <div
         className={clsx(
           'absolute right-0 top-12 z-50 w-56 overflow-hidden rounded-xl border border-neutral-100',
-          'bg-white shadow-xl transition-all duration-200 origin-top-right',
+          'bg-white dark:bg-neutral-100 shadow-xl transition-all duration-200 origin-top-right',
           open
             ? 'opacity-100 scale-100 translate-y-0'
             : 'opacity-0 scale-95 -translate-y-2 pointer-events-none',
@@ -186,7 +187,7 @@ function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void })
       />
       <div
         className={clsx(
-          'fixed inset-y-0 left-0 z-50 w-72 bg-white shadow-2xl lg:hidden',
+          'fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-neutral-100 shadow-2xl lg:hidden',
           'transition-transform duration-300 ease-out',
           open ? 'translate-x-0' : '-translate-x-full',
         )}
@@ -259,8 +260,8 @@ export function Navbar() {
       className={clsx(
         'sticky top-0 z-30 transition-all duration-300',
         scrolled
-          ? 'border-b border-neutral-100 bg-white/95 shadow-sm backdrop-blur-md'
-          : 'border-b border-transparent bg-white',
+          ? 'border-b border-neutral-100 bg-white/95 dark:bg-neutral-50/95 shadow-sm backdrop-blur-md'
+          : 'border-b border-transparent bg-white dark:bg-neutral-100',
       )}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6">
@@ -304,6 +305,7 @@ export function Navbar() {
 
         {/* Right controls */}
         <div className="flex items-center gap-1">
+          <ThemeToggle />
           <CartButton />
 
           {isAuthenticated ? (

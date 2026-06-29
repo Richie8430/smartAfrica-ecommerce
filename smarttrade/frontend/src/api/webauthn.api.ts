@@ -6,14 +6,19 @@ export const webauthnApi = {
   getRegistrationChallenge: (userId: string) =>
     apiClient.post<ApiResponse<Record<string, unknown>>>('/auth/webauthn/register/challenge', { userId }),
 
-  verifyRegistration: (userId: string, result: unknown) =>
-    apiClient.post<ApiResponse<{ verified: boolean }>>('/auth/webauthn/register/verify', { userId, result }),
+  // Backend's registerVerify reads req.body directly as the RegistrationResponseJSON —
+  // it must NOT be wrapped in an envelope object.
+  verifyRegistration: (_userId: string, result: unknown) =>
+    apiClient.post<ApiResponse<{ verified: boolean }>>('/auth/webauthn/register/verify', result),
 
   getAuthChallenge: (email: string) =>
-    apiClient.post<ApiResponse<{ userId: string; options: Record<string, unknown> }>>('/auth/webauthn/auth/challenge', { email }),
+    apiClient.post<ApiResponse<{ userId: string; options: Record<string, unknown> }>>('/auth/webauthn/challenge', { email }),
 
-  verifyAuthentication: (userId: string, result: unknown) =>
-    apiClient.post<ApiResponse<LoginResponse>>('/auth/webauthn/auth/verify', { userId, result }),
+  // Backend's authVerify destructures `userId` off req.body and treats the rest of the
+  // body as the flat AuthenticationResponseJSON — so the assertion fields must be spread
+  // alongside userId, not nested under a "result" key.
+  verifyAuthentication: (userId: string, result: object) =>
+    apiClient.post<ApiResponse<LoginResponse>>('/auth/webauthn/verify', { userId, ...result }),
 
   listCredentials: () =>
     apiClient.get<ApiResponse<WebAuthnCredential[]>>('/auth/webauthn/credentials'),

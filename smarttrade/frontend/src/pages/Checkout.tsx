@@ -94,7 +94,7 @@ export default function Checkout() {
           <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
             {/* Shipping form */}
             <FadeIn>
-              <div className="rounded-2xl border border-neutral-100 bg-white p-6 shadow-sm">
+              <div className="rounded-2xl border border-neutral-100 bg-white dark:bg-neutral-100 p-6 shadow-sm">
                 <div className="mb-5 flex items-center gap-2">
                   <MapPinIcon className="text-primary" />
                   <h2 className="text-lg font-bold text-neutral-900">Shipping address</h2>
@@ -148,7 +148,7 @@ export default function Checkout() {
             {/* Order summary */}
             <FadeIn delay={80}>
               <div className="sticky top-24 space-y-4">
-                <div className="rounded-2xl border border-neutral-100 bg-white p-5 shadow-sm">
+                <div className="rounded-2xl border border-neutral-100 bg-white dark:bg-neutral-100 p-5 shadow-sm">
                   <h2 className="mb-4 text-base font-bold text-neutral-900">
                     Order ({itemCount} item{itemCount !== 1 ? 's' : ''})
                   </h2>

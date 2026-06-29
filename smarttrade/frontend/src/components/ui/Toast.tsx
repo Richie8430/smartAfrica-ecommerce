@@ -64,7 +64,7 @@ export function Toaster() {
             onOpenChange={(open) => { if (!open) remove(t.id); }}
             className={clsx(
               'relative flex w-full max-w-sm items-start gap-3 overflow-hidden',
-              'rounded-xl border border-neutral-100 bg-white px-4 py-3.5 shadow-lg',
+              'rounded-xl border border-neutral-100 bg-white dark:bg-neutral-100 px-4 py-3.5 shadow-lg',
               'transition-all duration-200',
               bg,
               // Radix state-driven animations

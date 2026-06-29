@@ -155,12 +155,12 @@ export default function AdminProducts() {
           placeholder="Search products…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="h-9 w-full rounded-brand border border-neutral-200 bg-white pl-9 pr-3 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          className="h-9 w-full rounded-brand border border-neutral-200 bg-white dark:bg-neutral-100 pl-9 pr-3 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
         />
       </div>
 
       {/* Table */}
-      <div className="rounded-2xl border border-neutral-100 bg-white shadow-sm overflow-hidden">
+      <div className="rounded-2xl border border-neutral-100 bg-white dark:bg-neutral-100 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="border-b border-neutral-100 bg-neutral-50">
@@ -256,7 +256,7 @@ export default function AdminProducts() {
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 data-[state=open]:animate-[fade-in_0.2s_ease]" />
           <Dialog.Content
-            className="fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-6 shadow-2xl data-[state=open]:animate-[scale-in_0.3s_cubic-bezier(0.34,1.56,0.64,1)]"
+            className="fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white dark:bg-neutral-100 p-6 shadow-2xl data-[state=open]:animate-[scale-in_0.3s_cubic-bezier(0.34,1.56,0.64,1)]"
           >
             <div className="mb-5 flex items-center justify-between">
               <Dialog.Title className="text-lg font-bold text-neutral-900">
@@ -273,7 +273,7 @@ export default function AdminProducts() {
                 <label className="mb-1.5 block text-sm font-medium text-neutral-700">Description</label>
                 <textarea
                   rows={3}
-                  className="w-full rounded-brand border border-neutral-200 bg-white px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="w-full rounded-brand border border-neutral-200 bg-white dark:bg-neutral-100 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   {...register('description')}
                 />
                 {errors.description && <p className="mt-1 text-xs text-red-600">{errors.description.message}</p>}
@@ -285,7 +285,7 @@ export default function AdminProducts() {
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-neutral-700">Category</label>
                 <select
-                  className="h-10 w-full rounded-brand border border-neutral-200 bg-white px-3 text-sm focus:border-primary focus:outline-none"
+                  className="h-10 w-full rounded-brand border border-neutral-200 bg-white dark:bg-neutral-100 px-3 text-sm focus:border-primary focus:outline-none"
                   {...register('category_id')}
                 >
                   <option value="">Select a category…</option>

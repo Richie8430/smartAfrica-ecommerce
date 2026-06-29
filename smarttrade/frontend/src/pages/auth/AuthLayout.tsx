@@ -34,7 +34,7 @@ export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
 
         {/* Card */}
         <div
-          className="rounded-2xl border border-neutral-200 bg-white p-8 shadow-sm
+          className="rounded-2xl border border-neutral-200 bg-white dark:bg-neutral-100 p-8 shadow-sm
                      transition-shadow duration-300 hover:shadow-md"
           style={{ animation: 'scale-in 0.4s 0.05s cubic-bezier(0.34,1.56,0.64,1) both' }}
         >

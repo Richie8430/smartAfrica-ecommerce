@@ -32,7 +32,7 @@ export function Spinner({ size = 'md', className }: SpinnerProps) {
 
 export function FullscreenSpinner() {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 dark:bg-neutral-50/80 backdrop-blur-sm">
       <Spinner size="lg" className="text-primary" />
     </div>
   );

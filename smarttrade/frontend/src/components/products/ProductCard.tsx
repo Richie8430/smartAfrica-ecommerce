@@ -45,7 +45,7 @@ export function ProductCard({ product, className, listView = false }: ProductCar
     return (
       <div
         className={clsx(
-          'group flex gap-4 rounded-2xl border border-neutral-100 bg-white p-4',
+          'group flex gap-4 rounded-2xl border border-neutral-100 bg-white dark:bg-neutral-100 p-4',
           'transition-all duration-300 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5',
           className,
         )}
@@ -111,7 +111,7 @@ export function ProductCard({ product, className, listView = false }: ProductCar
   return (
     <div
       className={clsx(
-        'group relative flex flex-col rounded-2xl border border-neutral-100 bg-white overflow-hidden',
+        'group relative flex flex-col rounded-2xl border border-neutral-100 bg-white dark:bg-neutral-100 overflow-hidden',
         'transition-all duration-300 hover:-translate-y-1 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/8',
         className,
       )}
@@ -137,8 +137,8 @@ export function ProductCard({ product, className, listView = false }: ProductCar
 
         {/* Overlay badges */}
         {!inStock && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-[2px]">
-            <span className="rounded-full bg-neutral-900/80 px-3 py-1 text-xs font-semibold text-white">
+          <div className="absolute inset-0 flex items-center justify-center bg-white/60 dark:bg-neutral-50/60 backdrop-blur-[2px]">
+            <span className="rounded-full bg-ink/80 px-3 py-1 text-xs font-semibold text-white">
               Out of stock
             </span>
           </div>

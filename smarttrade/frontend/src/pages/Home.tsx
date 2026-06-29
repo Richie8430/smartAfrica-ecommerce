@@ -38,7 +38,7 @@ function FeatureCard({ icon, title, description, accent }: FeatureCardProps) {
   return (
     <div
       className="group relative flex flex-col gap-4 rounded-2xl border border-neutral-100
-                 bg-white p-7 shadow-sm transition-all duration-300
+                 bg-white dark:bg-neutral-100 p-7 shadow-sm transition-all duration-300
                  hover:-translate-y-1 hover:shadow-lg hover:border-primary/20"
     >
       {/* Accent gradient background on hover */}
@@ -85,7 +85,7 @@ function StepCard({ number, icon, title, description }: {
 
 function TestimonialCard({ name, location, text }: { name: string; location: string; text: string }) {
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border border-neutral-100 bg-white p-6 shadow-sm">
+    <div className="flex flex-col gap-4 rounded-2xl border border-neutral-100 bg-white dark:bg-neutral-100 p-6 shadow-sm">
       <div className="flex gap-1 text-amber-400">
         {Array(5).fill(null).map((_, i) => <StarIcon key={i} size={16} className="fill-current" />)}
       </div>
@@ -270,7 +270,7 @@ export default function Home() {
       </section>
 
       {/* ── How it works ──────────────────────────────────────────────────── */}
-      <section className="bg-white py-24">
+      <section className="bg-white dark:bg-neutral-100 py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <FadeIn>
             <div className="mx-auto max-w-xl text-center">

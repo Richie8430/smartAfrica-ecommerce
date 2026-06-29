@@ -23,7 +23,7 @@ export default function NotFound() {
             className="absolute inset-0 flex items-center justify-center"
             style={{ animation: 'float 4s ease-in-out infinite' }}
           >
-            <div className="rounded-2xl bg-white shadow-xl border border-neutral-100 px-6 py-4">
+            <div className="rounded-2xl bg-white dark:bg-neutral-100 shadow-xl border border-neutral-100 px-6 py-4">
               <div className="flex items-center gap-3">
                 <div className="h-3 w-3 rounded-full bg-red-400" />
                 <div className="h-3 w-3 rounded-full bg-amber-400" />
@@ -58,7 +58,7 @@ export default function NotFound() {
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search products…"
               aria-label="Search products"
-              className="h-10 w-full rounded-brand border border-neutral-200 bg-white pl-9 pr-3 text-sm placeholder:text-neutral-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="h-10 w-full rounded-brand border border-neutral-200 bg-white dark:bg-neutral-100 pl-9 pr-3 text-sm placeholder:text-neutral-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
           <Button type="submit" aria-label="Submit search" rightIcon={<ArrowRightIcon size={15} aria-hidden="true" />}>

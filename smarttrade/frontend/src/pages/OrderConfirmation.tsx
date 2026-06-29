@@ -55,7 +55,7 @@ export default function OrderConfirmation() {
 
         {order && (
           <FadeIn delay={250}>
-            <div className="mt-8 rounded-2xl border border-neutral-100 bg-white p-6 text-left shadow-sm">
+            <div className="mt-8 rounded-2xl border border-neutral-100 bg-white dark:bg-neutral-100 p-6 text-left shadow-sm">
               {/* Order ID + status */}
               <div className="mb-5 flex items-center justify-between">
                 <div>
@@ -82,7 +82,7 @@ export default function OrderConfirmation() {
                       <div className={`flex h-9 w-9 items-center justify-center rounded-full border-2 transition-colors ${
                         reached
                           ? 'border-primary bg-primary text-white'
-                          : 'border-neutral-200 bg-white text-neutral-300'
+                          : 'border-neutral-200 bg-white dark:bg-neutral-100 text-neutral-300'
                       }`}>
                         {step === 'CONFIRMED' && <CheckCircleIcon size={18} />}
                         {step === 'SHIPPED'   && <TruckIcon size={18} />}

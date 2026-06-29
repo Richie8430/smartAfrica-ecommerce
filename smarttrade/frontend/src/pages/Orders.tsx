@@ -70,7 +70,7 @@ export default function Orders() {
               <FadeIn key={order.order_id} delay={i * 40}>
                 <Link
                   to={`/order-confirmation/${order.order_id}`}
-                  className="group flex items-center gap-4 rounded-2xl border border-neutral-100 bg-white p-4 transition-all duration-200 hover:border-primary/20 hover:shadow-md hover:shadow-primary/5"
+                  className="group flex items-center gap-4 rounded-2xl border border-neutral-100 bg-white dark:bg-neutral-100 p-4 transition-all duration-200 hover:border-primary/20 hover:shadow-md hover:shadow-primary/5"
                 >
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/5 text-primary">
                     <PackageIcon size={22} />

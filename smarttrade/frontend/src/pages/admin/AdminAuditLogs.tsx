@@ -105,7 +105,7 @@ export default function AdminAuditLogs() {
             placeholder="Filter by user ID…"
             value={userId}
             onChange={(e) => { setUserId(e.target.value); setPage(1); }}
-            className="h-9 rounded-brand border border-neutral-200 bg-white pl-9 pr-3 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="h-9 rounded-brand border border-neutral-200 bg-white dark:bg-neutral-100 pl-9 pr-3 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             aria-label="Filter by user ID"
           />
         </div>
@@ -113,7 +113,7 @@ export default function AdminAuditLogs() {
         <select
           value={action}
           onChange={(e) => { setAction(e.target.value); setPage(1); }}
-          className="h-9 rounded-brand border border-neutral-200 bg-white px-3 text-sm text-neutral-700 focus:border-primary focus:outline-none"
+          className="h-9 rounded-brand border border-neutral-200 bg-white dark:bg-neutral-100 px-3 text-sm text-neutral-700 focus:border-primary focus:outline-none"
           aria-label="Filter by action"
         >
           <option value="">All actions</option>
@@ -124,14 +124,14 @@ export default function AdminAuditLogs() {
           type="date"
           value={from}
           onChange={(e) => { setFrom(e.target.value); setPage(1); }}
-          className="h-9 rounded-brand border border-neutral-200 bg-white px-3 text-sm focus:border-primary focus:outline-none"
+          className="h-9 rounded-brand border border-neutral-200 bg-white dark:bg-neutral-100 px-3 text-sm focus:border-primary focus:outline-none"
           aria-label="From date"
         />
         <input
           type="date"
           value={to}
           onChange={(e) => { setTo(e.target.value); setPage(1); }}
-          className="h-9 rounded-brand border border-neutral-200 bg-white px-3 text-sm focus:border-primary focus:outline-none"
+          className="h-9 rounded-brand border border-neutral-200 bg-white dark:bg-neutral-100 px-3 text-sm focus:border-primary focus:outline-none"
           aria-label="To date"
         />
         {(userId || action || from || to) && (
@@ -147,7 +147,7 @@ export default function AdminAuditLogs() {
       </div>
 
       <FadeIn>
-        <div className="rounded-2xl border border-neutral-100 bg-white shadow-sm overflow-hidden">
+        <div className="rounded-2xl border border-neutral-100 bg-white dark:bg-neutral-100 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm" aria-label="Audit log entries">
               <thead className="border-b border-neutral-100 bg-neutral-50">

@@ -8,7 +8,7 @@ import { AuthLayout } from './AuthLayout';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { BiometricLoginButton } from '@/components/biometric/BiometricLoginButton';
-import { BiometricEnrollModal } from '@/components/biometric/BiometricEnrollModal';
+import { useWebAuthn } from '@/hooks/useWebAuthn';
 import { authApi } from '@/api/auth.api';
 import { useAuthStore } from '@/stores/auth.store';
 import { toast } from '@/components/ui/Toast';
@@ -27,9 +27,9 @@ export default function Login() {
   const navigate      = useNavigate();
   const [searchParams]= useSearchParams();
   const returnUrl     = searchParams.get('returnUrl') ?? '/account';
-  const { setAuth }   = useAuthStore();
-  const [showPw, setShowPw]                     = useState(false);
-  const [showEnrollModal, setShowEnrollModal]   = useState(false);
+  const { setAuth, setPendingBiometricPrompt } = useAuthStore();
+  const { isSupported } = useWebAuthn();
+  const [showPw, setShowPw] = useState(false);
 
   const {
     register,
@@ -51,12 +51,15 @@ export default function Login() {
 
       const destination = user.role === 'ADMIN' ? '/admin' : returnUrl;
 
-      // Prompt biometric enroll if not enrolled and not dismissed
-      if (!user.biometric_enrolled && !localStorage.getItem(BIOMETRIC_DISMISS_KEY)) {
-        setShowEnrollModal(true);
-      } else {
-        navigate(destination, { replace: true });
-      }
+      // GuestRoute redirects away from /login as soon as isAuthenticated flips true
+      // (right after setAuth above), unmounting this page before any local modal state
+      // could render — so the enroll decision is carried via the auth store instead,
+      // and AccountLayout shows the modal once the user actually lands on /account.
+      const shouldPromptEnroll =
+        !user.biometric_enrolled && isSupported && !localStorage.getItem(BIOMETRIC_DISMISS_KEY);
+      setPendingBiometricPrompt(shouldPromptEnroll);
+
+      navigate(destination, { replace: true });
     } catch (err) {
       const apiError = err as AxiosError<ApiResponse>;
       const status   = apiError.response?.status;
@@ -74,7 +77,6 @@ export default function Login() {
   }
 
   return (
-    <>
       <AuthLayout title="Sign in to SmartTrade" subtitle="Welcome back — glad to see you!">
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
           <Input
@@ -135,7 +137,7 @@ export default function Login() {
               <div className="w-full border-t border-neutral-200" />
             </div>
             <div className="relative flex justify-center">
-              <span className="bg-white px-3 text-xs text-neutral-400">or continue with</span>
+              <span className="bg-white dark:bg-neutral-100 px-3 text-xs text-neutral-400">or continue with</span>
             </div>
           </div>
 
@@ -155,15 +157,5 @@ export default function Login() {
           </Link>
         </p>
       </AuthLayout>
-
-      <BiometricEnrollModal
-        open={showEnrollModal}
-        onClose={() => {
-          setShowEnrollModal(false);
-          const role = useAuthStore.getState().user?.role;
-          navigate(role === 'ADMIN' ? '/admin' : returnUrl, { replace: true });
-        }}
-      />
-    </>
   );
 }

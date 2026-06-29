@@ -94,7 +94,6 @@ export interface Payment {
 export interface WebAuthnCredential {
   credential_id: string;
   device_type?:  string | null;
-  backed_up:     boolean;
   transports:    string[];
   created_at:    string;
 }

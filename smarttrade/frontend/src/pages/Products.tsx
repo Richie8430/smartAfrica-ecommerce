@@ -83,7 +83,7 @@ export default function Products() {
   return (
     <div className="min-h-screen bg-neutral-50">
       {/* ── Top bar ─────────────────────────────────────────────────────────── */}
-      <div className="sticky top-16 z-20 border-b border-neutral-100 bg-white/95 backdrop-blur-sm">
+      <div className="sticky top-16 z-20 border-b border-neutral-100 bg-white/95 dark:bg-neutral-50/95 backdrop-blur-sm">
         <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:px-6">
           {/* Search */}
           <div className="relative flex-1 max-w-md">
@@ -93,7 +93,7 @@ export default function Products() {
               placeholder="Search products…"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="h-9 w-full rounded-brand border border-neutral-200 bg-white pl-9 pr-3 text-sm placeholder:text-neutral-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="h-9 w-full rounded-brand border border-neutral-200 bg-white dark:bg-neutral-100 pl-9 pr-3 text-sm placeholder:text-neutral-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
 
@@ -101,7 +101,7 @@ export default function Products() {
           <select
             value={sort}
             onChange={(e) => setFilter('sort', e.target.value)}
-            className="h-9 rounded-brand border border-neutral-200 bg-white px-3 text-sm text-neutral-700 focus:border-primary focus:outline-none"
+            className="h-9 rounded-brand border border-neutral-200 bg-white dark:bg-neutral-100 px-3 text-sm text-neutral-700 focus:border-primary focus:outline-none"
           >
             {SORT_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>{o.label}</option>
@@ -149,7 +149,7 @@ export default function Products() {
           `}
         >
           <FadeIn>
-            <div className="rounded-2xl border border-neutral-100 bg-white p-4">
+            <div className="rounded-2xl border border-neutral-100 bg-white dark:bg-neutral-100 p-4">
               <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-neutral-500">
                 Category
               </p>

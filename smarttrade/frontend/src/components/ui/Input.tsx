@@ -37,7 +37,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={inputId}
             className={clsx(
-              'w-full rounded-brand border bg-white text-sm text-neutral-900',
+              'w-full rounded-brand border bg-white dark:bg-neutral-100 text-sm text-neutral-900',
               'placeholder:text-neutral-400',
               'h-10 px-3 py-2',
               // Animated focus ring

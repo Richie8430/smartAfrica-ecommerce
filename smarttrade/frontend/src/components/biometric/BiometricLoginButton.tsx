@@ -18,7 +18,7 @@ function FingerprintIcon() {
 }
 
 export function BiometricLoginButton({ email, onSuccess }: BiometricLoginButtonProps) {
-  const { isSupported, loading, loginWithBiometric } = useWebAuthn();
+  const { isSupported, loading, error, loginWithBiometric, clearError } = useWebAuthn();
   const navigate = useNavigate();
 
   if (!isSupported) return null;
@@ -32,21 +32,37 @@ export function BiometricLoginButton({ email, onSuccess }: BiometricLoginButtonP
     if (result.success) {
       toast.success('Signed in!', 'Welcome back.');
       onSuccess ? onSuccess() : navigate('/account');
-    } else {
-      toast.error('Biometric sign-in failed', result.error);
     }
+    // On failure, the inline error message below the button (driven by the
+    // hook's `error` state) is the single source of truth — no toast here,
+    // so the user isn't shown two different error messages at once.
   }
 
   return (
-    <Button
-      type="button"
-      variant="outline"
-      fullWidth
-      loading={loading}
-      leftIcon={<FingerprintIcon />}
-      onClick={handleClick}
-    >
-      Sign in with fingerprint
-    </Button>
+    <div>
+      <Button
+        type="button"
+        variant="outline"
+        fullWidth
+        loading={loading}
+        leftIcon={<FingerprintIcon />}
+        onClick={handleClick}
+      >
+        Sign in with fingerprint
+      </Button>
+
+      {error && (
+        <div className="mt-2 text-sm text-red-600" role="alert">
+          <p>{error}</p>
+          <button
+            type="button"
+            onClick={clearError}
+            className="mt-0.5 text-xs font-medium text-neutral-500 underline hover:text-neutral-700"
+          >
+            Use your password instead
+          </button>
+        </div>
+      )}
+    </div>
   );
 }

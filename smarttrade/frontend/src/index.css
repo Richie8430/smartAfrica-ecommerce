@@ -1,6 +1,13 @@
 @import "tailwindcss";
 
 /*
+ * Dark mode is class-based (toggled on <html>), not OS-preference-based —
+ * see src/stores/theme.store.ts. `dark:` variants below apply whenever a
+ * `.dark` ancestor is present.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
  * Tailwind CSS v4 — CSS-first theme configuration.
  * All brand tokens, animations, and keyframes defined here.
  */
@@ -11,6 +18,10 @@
   --color-primary-dark:  #0F2848;
   --color-success:       #1D9E75;
   --color-accent:        #2E75B6;
+  /* Fixed dark surface — intentionally does NOT flip under .dark (e.g. footer,
+     image overlay badges) since neutral-900 below is redefined to mean
+     "primary text colour", which inverts to near-white in dark mode. */
+  --color-ink:           #0F172A;
 
   /* ── Neutrals ────────────────────────────────────────────────────────── */
   --color-neutral-50:  #F8FAFC;
@@ -50,6 +61,26 @@
   --animate-shimmer:       shimmer    1.6s linear infinite;
   --animate-spin-slow:     spin       3s linear infinite;
   --animate-bounce-soft:   bounce-soft 1s ease-in-out infinite;
+}
+
+/*
+ * ── Dark mode palette ─────────────────────────────────────────────────────
+ * Every component uses the semantic `neutral-*` scale for backgrounds,
+ * borders, and text (e.g. `bg-neutral-50`, `text-neutral-900`). Redefining
+ * those CSS variables here flips the whole app's chrome to dark for free —
+ * no per-component `dark:` classes needed for anything already using the
+ * neutral scale. Brand colors (primary/accent/success) are left untouched
+ * so the brand stays recognizable in both themes.
+ */
+.dark {
+  --color-neutral-50:  #0B1220;
+  --color-neutral-100: #111827;
+  --color-neutral-200: #1F2937;
+  --color-neutral-300: #334155;
+  --color-neutral-400: #94A3B8;
+  --color-neutral-500: #CBD5E1;
+  --color-neutral-700: #E2E8F0;
+  --color-neutral-900: #F8FAFC;
 }
 
 /* ── Keyframes ──────────────────────────────────────────────────────────────── */

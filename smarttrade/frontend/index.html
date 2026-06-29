@@ -24,8 +24,22 @@
 
     <!-- Theme + app meta -->
     <meta name="theme-color" content="#2563eb" />
-    <meta name="color-scheme" content="light" />
+    <meta name="color-scheme" content="light dark" />
     <meta name="application-name" content="SmartTrade" />
+
+    <!-- Apply the saved theme before first paint to avoid a light-mode flash.
+         Must stay a synchronous inline script — mirrors src/stores/theme.store.ts. -->
+    <script>
+      (function () {
+        try {
+          var raw = localStorage.getItem('smarttrade_theme');
+          var theme = raw ? JSON.parse(raw).state.theme : 'system';
+          var dark = theme === 'dark' ||
+            (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          if (dark) document.documentElement.classList.add('dark');
+        } catch (e) { /* localStorage unavailable — default to light */ }
+      })();
+    </script>
 
     <!-- Favicon — inline SVG, no extra network request -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />

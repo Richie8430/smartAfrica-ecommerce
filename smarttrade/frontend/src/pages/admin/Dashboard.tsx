@@ -36,7 +36,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 mb-8">
         {stats.map((s, i) => (
           <FadeIn key={s.label} delay={i * 60}>
-            <div className="rounded-2xl border border-neutral-100 bg-white p-5 shadow-sm">
+            <div className="rounded-2xl border border-neutral-100 bg-white dark:bg-neutral-100 p-5 shadow-sm">
               <div className={`mb-3 inline-flex rounded-xl p-2.5 ${s.bg}`}>
                 <span className={s.color}>{s.icon}</span>
               </div>
@@ -53,7 +53,7 @@ export default function Dashboard() {
 
       {/* Recent orders */}
       <FadeIn delay={200}>
-        <div className="rounded-2xl border border-neutral-100 bg-white shadow-sm">
+        <div className="rounded-2xl border border-neutral-100 bg-white dark:bg-neutral-100 shadow-sm">
           <div className="flex items-center justify-between border-b border-neutral-100 px-5 py-4">
             <h2 className="font-bold text-neutral-900">Recent orders</h2>
             <Link to="/admin/orders" className="flex items-center gap-1 text-sm text-primary hover:text-primary-dark transition-colors">

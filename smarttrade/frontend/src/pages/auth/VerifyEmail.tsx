@@ -138,7 +138,7 @@ export default function VerifyEmail() {
                 'animate-[fade-up_0.3s_cubic-bezier(0,0,0.2,1)_both]',
                 digit
                   ? 'border-primary bg-primary/5 text-primary shadow-sm'
-                  : 'border-neutral-200 bg-white focus:border-primary',
+                  : 'border-neutral-200 bg-white dark:bg-neutral-100 focus:border-primary',
               )}
             />
           ))}

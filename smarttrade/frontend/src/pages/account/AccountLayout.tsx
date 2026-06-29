@@ -1,9 +1,10 @@
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { authApi } from '@/api/auth.api';
 import { useAuthStore } from '@/stores/auth.store';
 import { useCartStore } from '@/stores/cart.store';
 import { Avatar } from '@/components/ui/Avatar';
+import { BiometricEnrollModal } from '@/components/biometric/BiometricEnrollModal';
 import {
   HomeIcon, UserIcon, PackageIcon, ShieldCheckIcon, MapPinIcon, LogOutIcon,
 } from '@/components/ui/Icons';
@@ -29,9 +30,13 @@ const tabClass = ({ isActive }: { isActive: boolean }) =>
 export default function AccountLayout() {
   const navigate  = useNavigate();
   const location  = useLocation();
+  const qc        = useQueryClient();
   const clearAuth = useAuthStore((s) => s.clearAuth);
   const clearCart = useCartStore((s) => s.clearCart);
   const user      = useAuthStore((s) => s.user);
+  const updateUser= useAuthStore((s) => s.updateUser);
+  const pendingBiometricPrompt = useAuthStore((s) => s.pendingBiometricPrompt);
+  const setPendingBiometricPrompt = useAuthStore((s) => s.setPendingBiometricPrompt);
 
   const logoutMutation = useMutation({
     mutationFn: authApi.logout,
@@ -43,7 +48,7 @@ export default function AccountLayout() {
       {/* ── Mobile top tab bar ──────────────────────────────────────────────── */}
       <nav
         aria-label="Account navigation"
-        className="sticky top-16 z-20 flex border-b border-neutral-100 bg-white sm:hidden"
+        className="sticky top-16 z-20 flex border-b border-neutral-100 bg-white dark:bg-neutral-100 sm:hidden"
       >
         {NAV.map((n) => {
           const isActive = n.end
@@ -67,7 +72,7 @@ export default function AccountLayout() {
       <div className="mx-auto flex max-w-5xl gap-6 px-4 py-6 sm:px-6 sm:py-8">
         {/* ── Desktop sidebar ────────────────────────────────────────────────── */}
         <aside className="hidden w-52 shrink-0 sm:block">
-          <div className="sticky top-24 rounded-2xl border border-neutral-100 bg-white p-4 shadow-sm">
+          <div className="sticky top-24 rounded-2xl border border-neutral-100 bg-white dark:bg-neutral-100 p-4 shadow-sm">
             {/* Avatar */}
             <div className="mb-4 flex flex-col items-center gap-2 border-b border-neutral-100 pb-4">
               <Avatar seed={user?.userId} name={user?.full_name} size="lg" />
@@ -105,10 +110,21 @@ export default function AccountLayout() {
         </aside>
 
         {/* ── Page content ───────────────────────────────────────────────────── */}
-        <main className="min-h-[400px] flex-1 rounded-2xl border border-neutral-100 bg-white p-5 shadow-sm sm:p-6">
+        <main className="min-h-[400px] flex-1 rounded-2xl border border-neutral-100 bg-white dark:bg-neutral-100 p-5 shadow-sm sm:p-6">
           <Outlet />
         </main>
       </div>
+
+      <BiometricEnrollModal
+        open={pendingBiometricPrompt}
+        onClose={() => setPendingBiometricPrompt(false)}
+        onEnrolled={() => {
+          // Do NOT close the modal here — it must stay open showing the success
+          // screen until the user clicks "Got it" (which calls onClose).
+          updateUser({ biometric_enrolled: true });
+          qc.invalidateQueries({ queryKey: ['webauthn-credentials'] });
+        }}
+      />
     </div>
   );
 }

@@ -72,7 +72,7 @@ export default function AccountDashboard() {
           <Link
             key={label}
             to={to}
-            className="group rounded-2xl border border-neutral-100 bg-white p-4 text-center transition-all hover:border-primary/20 hover:shadow-md hover:shadow-primary/5"
+            className="group rounded-2xl border border-neutral-100 bg-white dark:bg-neutral-100 p-4 text-center transition-all hover:border-primary/20 hover:shadow-md hover:shadow-primary/5"
           >
             <div className="mb-1.5 flex justify-center text-primary" aria-hidden="true">{icon}</div>
             <p className="text-xl font-bold text-neutral-900">{value}</p>
@@ -82,7 +82,7 @@ export default function AccountDashboard() {
       </div>
 
       {/* Recent orders */}
-      <div className="rounded-2xl border border-neutral-100 bg-white">
+      <div className="rounded-2xl border border-neutral-100 bg-white dark:bg-neutral-100">
         <div className="flex items-center justify-between border-b border-neutral-100 px-4 py-3">
           <h3 className="font-semibold text-neutral-900">Recent orders</h3>
           <Link to="/account/orders" className="flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark transition-colors">

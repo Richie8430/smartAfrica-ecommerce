@@ -1,32 +1,43 @@
 import { useState } from 'react';
+import axios from 'axios';
 import {
   startRegistration,
   startAuthentication,
+  browserSupportsWebAuthn,
 } from '@simplewebauthn/browser';
 import { webauthnApi } from '@/api/webauthn.api';
 import { useAuthStore } from '@/stores/auth.store';
-import type { WebAuthnCredential } from '@/types';
+import type { WebAuthnCredential, ApiResponse } from '@/types';
 
-export const isWebAuthnSupported =
-  typeof window !== 'undefined' &&
-  typeof window.PublicKeyCredential !== 'undefined';
+export const isWebAuthnSupported = browserSupportsWebAuthn();
 
-interface WebAuthnError {
-  name: string;
-  message: string;
-}
-
+// Errors thrown by startRegistration()/startAuthentication() are wrapped in
+// SimpleWebAuthn's WebAuthnError, but it preserves the original DOMException's
+// `name` (NotAllowedError, InvalidStateError, etc.) via `cause.name` — so the
+// same name checks used for raw DOMExceptions work here too.
 function friendlyError(err: unknown): string {
-  const e = err as WebAuthnError;
-  if (e?.name === 'NotAllowedError')
-    return 'You cancelled the biometric prompt. Try again when ready.';
-  if (e?.name === 'NotSupportedError')
-    return 'This device does not support biometric authentication.';
-  if (e?.name === 'SecurityError')
-    return 'Security error — make sure you are on a secure connection (HTTPS).';
-  if (e?.name === 'InvalidStateError')
-    return 'This passkey is already registered. Try signing in instead.';
-  return (e?.message ?? 'Something went wrong with biometric authentication.');
+  const name = (err as { name?: string } | null)?.name;
+
+  if (name === 'NotAllowedError') return 'You cancelled the fingerprint prompt';
+  if (name === 'InvalidStateError') return 'This device is already enrolled';
+  if (name === 'NotSupportedError') return 'This device does not support biometric authentication';
+  if (name === 'SecurityError') return 'Security error — make sure you are on a secure connection (HTTPS)';
+
+  if (axios.isAxiosError<ApiResponse>(err)) {
+    // No response at all means the request never reached the server (offline, DNS, etc.)
+    if (!err.response) return 'Connection lost — please try again';
+
+    const serverMessage = err.response.data?.error;
+    if (serverMessage?.toLowerCase().includes('challenge expired')) {
+      return 'The fingerprint session timed out — please try again';
+    }
+    if (serverMessage?.toLowerCase().includes('no fingerprint enrolled')) {
+      return 'No fingerprint enrolled on this account';
+    }
+    return serverMessage ?? 'Something went wrong with biometric authentication';
+  }
+
+  return (err as Error)?.message || 'Something went wrong with biometric authentication';
 }
 
 export function useWebAuthn() {
@@ -108,6 +119,7 @@ export function useWebAuthn() {
     isSupported: isWebAuthnSupported,
     loading,
     error,
+    clearError: () => setError(null),
     enrollBiometric,
     loginWithBiometric,
     listCredentials,

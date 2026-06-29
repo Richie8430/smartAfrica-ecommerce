@@ -103,7 +103,7 @@ export default function ProductDetail() {
         <FadeIn>
           <div className="grid gap-10 md:grid-cols-2">
             {/* Image */}
-            <div className="relative aspect-square overflow-hidden rounded-3xl bg-white border border-neutral-100 shadow-sm">
+            <div className="relative aspect-square overflow-hidden rounded-3xl bg-white dark:bg-neutral-100 border border-neutral-100 shadow-sm">
               {product.image_url && !imgError ? (
                 <img
                   src={product.image_url}

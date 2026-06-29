@@ -59,7 +59,7 @@ function AddressFormModal({
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm data-[state=open]:animate-[fade-in_0.2s_ease]" />
         <Dialog.Content
-          className="fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-6 shadow-2xl data-[state=open]:animate-[scale-in_0.3s_cubic-bezier(0.34,1.56,0.64,1)]"
+          className="fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white dark:bg-neutral-100 p-6 shadow-2xl data-[state=open]:animate-[scale-in_0.3s_cubic-bezier(0.34,1.56,0.64,1)]"
           aria-describedby="address-form-desc"
         >
           <div className="mb-5 flex items-center justify-between">
@@ -171,7 +171,7 @@ export default function Addresses() {
           {addresses.map((addr) => (
             <li
               key={addr.address_id}
-              className="rounded-2xl border border-neutral-100 bg-white p-4"
+              className="rounded-2xl border border-neutral-100 bg-white dark:bg-neutral-100 p-4"
               aria-label={`${addr.is_default ? 'Default address: ' : ''}${addr.full_name}, ${addr.city}`}
             >
               <div className="flex items-start justify-between gap-4">

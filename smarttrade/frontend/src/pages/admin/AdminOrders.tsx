@@ -63,7 +63,7 @@ export default function AdminOrders() {
             className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
               filter === s
                 ? 'bg-primary text-white'
-                : 'bg-white border border-neutral-200 text-neutral-600 hover:border-primary/30 hover:text-primary'
+                : 'bg-white dark:bg-neutral-100 border border-neutral-200 text-neutral-600 hover:border-primary/30 hover:text-primary'
             }`}
           >
             {s}
@@ -71,7 +71,7 @@ export default function AdminOrders() {
         ))}
       </div>
 
-      <div className="rounded-2xl border border-neutral-100 bg-white shadow-sm overflow-hidden">
+      <div className="rounded-2xl border border-neutral-100 bg-white dark:bg-neutral-100 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="border-b border-neutral-100 bg-neutral-50">

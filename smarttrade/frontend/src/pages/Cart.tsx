@@ -97,7 +97,7 @@ export default function Cart() {
           <div className="space-y-3">
             {items.map((item, i) => (
               <FadeIn key={item.cart_item_id} delay={i * 50}>
-                <div className="flex gap-4 rounded-2xl border border-neutral-100 bg-white p-4 transition-all duration-200 hover:border-primary/20 hover:shadow-md hover:shadow-primary/5">
+                <div className="flex gap-4 rounded-2xl border border-neutral-100 bg-white dark:bg-neutral-100 p-4 transition-all duration-200 hover:border-primary/20 hover:shadow-md hover:shadow-primary/5">
                   <Link
                     to={`/products/${item.product_id}`}
                     className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-neutral-50"
@@ -164,7 +164,7 @@ export default function Cart() {
 
           {/* Summary */}
           <FadeIn delay={100}>
-            <div className="sticky top-24 rounded-2xl border border-neutral-100 bg-white p-6 shadow-sm">
+            <div className="sticky top-24 rounded-2xl border border-neutral-100 bg-white dark:bg-neutral-100 p-6 shadow-sm">
               <h2 className="mb-4 text-lg font-bold text-neutral-900">Order summary</h2>
 
               <div className="space-y-3 text-sm">

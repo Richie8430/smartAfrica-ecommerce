@@ -15,7 +15,7 @@ interface BiometricEnrollModalProps {
 }
 
 export function BiometricEnrollModal({ open, onClose, onEnrolled }: BiometricEnrollModalProps) {
-  const { enrollBiometric, loading, isSupported } = useWebAuthn();
+  const { enrollBiometric, loading, error, clearError, isSupported } = useWebAuthn();
   const [enrolled, setEnrolled] = useState(false);
 
   if (!isSupported) return null;
@@ -26,10 +26,11 @@ export function BiometricEnrollModal({ open, onClose, onEnrolled }: BiometricEnr
       setEnrolled(true);
       onEnrolled?.();
       toast.success('Biometric login enabled!', 'Sign in instantly next time.');
-      setTimeout(onClose, 2000);
-    } else {
-      toast.error('Enrollment failed', result.error);
+      // No auto-close timer — the user dismisses explicitly via "Got it" below.
     }
+    // On failure, enrolled stays false so the modal falls back to the idle
+    // screen automatically (with the inline error shown below) — the user
+    // can immediately retry without the modal getting stuck mid-ceremony.
   }
 
   function handleDismiss() {
@@ -47,7 +48,7 @@ export function BiometricEnrollModal({ open, onClose, onEnrolled }: BiometricEnr
         />
         <Dialog.Content
           className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2
-                     rounded-2xl bg-white p-8 shadow-2xl
+                     rounded-2xl bg-white dark:bg-neutral-100 p-8 shadow-2xl
                      data-[state=open]:animate-[scale-in_0.3s_cubic-bezier(0.34,1.56,0.64,1)_both]
                      data-[state=closed]:animate-[scale-in_0.2s_reverse_ease-in_both]"
         >
@@ -61,11 +62,14 @@ export function BiometricEnrollModal({ open, onClose, onEnrolled }: BiometricEnr
                 <CheckCircleIcon size={40} className="text-green-600" />
               </div>
               <div>
-                <p className="text-xl font-bold text-neutral-900">All set!</p>
+                <p className="text-xl font-bold text-neutral-900">Fingerprint enabled!</p>
                 <p className="mt-1.5 text-sm text-neutral-500 leading-relaxed">
-                  Fingerprint login is enabled. Sign in instantly on your next visit.
+                  Next time you visit, just touch the sensor to sign in.
                 </p>
               </div>
+              <Button fullWidth onClick={onClose}>
+                Got it
+              </Button>
             </div>
           ) : (
             /* ── Enroll prompt ─────────────────────────────────────────── */
@@ -109,12 +113,18 @@ export function BiometricEnrollModal({ open, onClose, onEnrolled }: BiometricEnr
                 ))}
               </div>
 
+              {error && (
+                <p className="mt-4 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600" role="alert">
+                  {error}
+                </p>
+              )}
+
               <div className="mt-6 flex flex-col gap-3">
-                <Button fullWidth loading={loading} onClick={handleEnroll} size="lg">
-                  Enable fingerprint login
+                <Button fullWidth loading={loading} onClick={() => { clearError(); void handleEnroll(); }} size="lg">
+                  {error ? 'Try again' : 'Enable fingerprint login'}
                 </Button>
                 <Button variant="ghost" fullWidth onClick={handleDismiss} className="text-neutral-500">
-                  Maybe later
+                  {error ? 'Skip for now' : 'Maybe later'}
                 </Button>
               </div>
             </>

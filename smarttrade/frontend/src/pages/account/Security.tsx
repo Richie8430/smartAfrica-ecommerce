@@ -112,7 +112,7 @@ export default function Security() {
               {Array.from({ length: 2 }).map((_, i) => <div key={i} className="skeleton h-14 rounded-xl" />)}
             </div>
           ) : credentials.length === 0 ? (
-            <p className="text-sm text-neutral-400">No enrolled devices.</p>
+            <p className="text-sm text-neutral-400">No fingerprint enrolled on this account.</p>
           ) : (
             <ul className="space-y-2" role="list" aria-label="Enrolled biometric devices">
               {credentials.map((cred) => (
@@ -241,8 +241,9 @@ export default function Security() {
         open={bioOpen}
         onClose={() => setBioOpen(false)}
         onEnrolled={() => {
+          // Do NOT close the modal here — it must stay open showing the success
+          // screen until the user clicks "Got it" (which calls onClose).
           updateUser({ biometric_enrolled: true });
-          setBioOpen(false);
           qc.invalidateQueries({ queryKey: ['webauthn-credentials'] });
         }}
       />

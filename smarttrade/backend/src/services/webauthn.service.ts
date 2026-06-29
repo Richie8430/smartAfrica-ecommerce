@@ -60,7 +60,7 @@ export async function verifyRegistration(
 ) {
   const challenge = await tokenStore.getChallenge(userId);
   if (!challenge) {
-    throw new AppError(400, 'Challenge expired or already used — request a new one');
+    throw new AppError(400, 'Challenge expired — please try again');
   }
 
   const { verified, registrationInfo } = await verifyRegistrationResponse({
@@ -139,7 +139,7 @@ export async function getAuthenticationOptions(email: string) {
     where: { user_id: user.user_id },
   });
   if (credentials.length === 0) {
-    throw new AppError(400, 'No biometric credentials enrolled for this account');
+    throw new AppError(400, 'No fingerprint enrolled on this account');
   }
 
   const options = await generateAuthenticationOptions({
@@ -163,7 +163,7 @@ export async function verifyAuthentication(
 ) {
   const challenge = await tokenStore.getChallenge(userId);
   if (!challenge) {
-    throw new AppError(400, 'Challenge expired or already used — request a new one');
+    throw new AppError(400, 'Challenge expired — please try again');
   }
 
   const credential = await db.webAuthnCredential.findUnique({
@@ -181,9 +181,11 @@ export async function verifyAuthentication(
     },
   });
 
-  if (!credential) throw new AppError(404, 'Credential not found');
-  if (credential.user_id !== userId) {
-    throw new AppError(403, 'Credential does not belong to this user');
+  // A single generic 401 for both "doesn't exist" and "belongs to someone else" —
+  // distinguishing the two via status code would let an attacker probe whether a
+  // given credential_id exists at all.
+  if (!credential || credential.user_id !== userId) {
+    throw new AppError(401, 'Credential not recognised');
   }
 
   const credentialPublicKey = new Uint8Array(Buffer.from(credential.public_key, 'base64'));
